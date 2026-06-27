@@ -1,0 +1,11 @@
+[project]
+name = "word-game"
+version = "0.1.0"
+description = "뻥뚜리 문제 생성 및 파이썬 게임"
+requires-python = ">=3.10"
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
