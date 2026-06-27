@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> 법률 용어 게임</title>
+    <title>법률 용어 게임</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <div class="app">
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <h2>주제 선택</h2>
             <ul class="topic-list" id="topic-list">
                 <li class="topic-item active" data-topic="civil">민법</li>
@@ -20,6 +20,8 @@
             </ul>
         </aside>
 
+        <button class="menu-toggle" id="menu-toggle" aria-label="메뉴 열기">☰</button>
+
         <main class="main">
             <header class="header">
                 <h1 id="topic-title">민법</h1>
@@ -29,24 +31,67 @@
                 </div>
             </header>
 
-            <div class="game-area">
-                <div class="sentence" id="sentence"></div>
-                <div class="hint" id="hint"></div>
-                
-                <div class="inputs" id="inputs"></div>
-                
-                <div class="buttons">
-                    <button id="submit-btn" onclick="checkAnswer()">정답 확인</button>
-                    <button id="next-btn" onclick="nextQuestion()" style="display:none;">다음 문제</button>
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+
+            <div class="game-area" id="game-area">
+                <div class="question-card" id="question-card">
+                    <div class="sentence" id="sentence"></div>
+                    <div class="hint" id="hint"></div>
+                    
+                    <div class="inputs" id="inputs"></div>
+                    
+                    <div class="buttons">
+                        <button id="submit-btn" class="btn-primary" onclick="checkAnswer()">정답 확인</button>
+                        <button id="next-btn" class="btn-secondary" onclick="nextQuestion()" style="display:none;">다음 문제</button>
+                    </div>
+                    
+                    <div class="message" id="message"></div>
                 </div>
-                
-                <div class="message" id="message"></div>
             </div>
 
             <div class="controls">
-                <button onclick="startGame()">게임 시작</button>
+                <button class="btn-start" onclick="startGame()">게임 시작</button>
+            </div>
+
+            <div class="stats" id="stats" style="display:none;">
+                <h3>통계</h3>
+                <div class="stat-item">
+                    <span>정답률:</span>
+                    <strong id="accuracy">0%</strong>
+                </div>
+                <div class="stat-item">
+                    <span>소요 시간:</span>
+                    <strong id="time">00:00</strong>
+                </div>
             </div>
         </main>
+    </div>
+
+    <div class="result-modal" id="result-modal" style="display:none;">
+        <div class="result-content">
+            <h2>게임 종료!</h2>
+            <div class="final-score">
+                <span>최종 점수</span>
+                <strong id="final-score">0</strong>
+            </div>
+            <div class="result-stats">
+                <div class="stat">
+                    <span>정답:</span>
+                    <strong id="correct-count">0</strong>
+                </div>
+                <div class="stat">
+                    <span>오답:</span>
+                    <strong id="wrong-count">0</strong>
+                </div>
+                <div class="stat">
+                    <span>정답률:</span>
+                    <strong id="final-accuracy">0%</strong>
+                </div>
+            </div>
+            <button class="btn-restart" onclick="restartGame()">다시 하기</button>
+        </div>
     </div>
 
     <script>
