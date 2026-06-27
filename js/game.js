@@ -1,14 +1,8 @@
+let currentTopic = 'civil';
 let questions = [];
 let currentQuestion = 0;
 let score = 0;
-let answers = [];
-let gameMode = 'preset';
-
-async function loadQuestions() {
-    const response = await fetch('data/questions.json');
-    const data = await response.json();
-    return data;
-}
+let attemptCount = 0;
 
 function shuffleArray(array) {
     const shuffled = [...array];
@@ -19,49 +13,26 @@ function shuffleArray(array) {
     return shuffled;
 }
 
-function generateRandomSentence(wordPool) {
-    const templates = [
-        { template: "오늘 __ 이/가 __ 입니다.", blanks: 2 },
-        { template: "나는 __ 에서 __ 합니다.", blanks: 2 },
-        { template: "__ 은/는 __ 이/가 됩니다.", blanks: 2 },
-        { template: "__ 이/가 __ 하여 __ 입니다.", blanks: 3 }
-    ];
+function selectTopic(topic) {
+    currentTopic = topic;
     
-    const template = templates[Math.floor(Math.random() * templates.length)];
-    const blanks = [];
+    document.querySelectorAll('.topic-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    document.querySelector(`[data-topic="${topic}"]`).classList.add('active');
     
-    const noun1 = wordPool.nouns[Math.floor(Math.random() * wordPool.nouns.length)];
-    const noun2 = wordPool.nouns[Math.floor(Math.random() * wordPool.nouns.length)];
-    const adj = wordPool.adjectives[Math.floor(Math.random() * wordPool.adjectives.length)];
-    
-    blanks.push(noun1);
-    blanks.push(adj);
-    if (template.blanks === 3) {
-        blanks.push(noun2);
-    }
-    
-    return {
-        template: template.template,
-        blanks: blanks,
-        hint: "랜덤 생성 문제"
-    };
+    document.getElementById('topic-title').textContent = questionsData[topic].title;
+    score = 0;
+    document.getElementById('score').textContent = score;
 }
 
-async function startGame(mode) {
-    gameMode = mode;
-    const data = await loadQuestions();
-    
-    if (mode === 'preset') {
-        questions = shuffleArray(data.sentences).slice(0, 10);
-    } else {
-        questions = [];
-        for (let i = 0; i < 10; i++) {
-            questions.push(generateRandomSentence(data.wordPool));
-        }
-    }
+function startGame() {
+    const data = questionsData[currentTopic];
+    questions = shuffleArray(data.sentences).slice(0, 5);
     
     currentQuestion = 0;
     score = 0;
+    attemptCount = 0;
     
     document.getElementById('score').textContent = score;
     document.getElementById('total').textContent = questions.length;
@@ -70,12 +41,18 @@ async function startGame(mode) {
 }
 
 function showQuestion() {
+    if (currentQuestion >= questions.length) {
+        alert(`게임 종료! 최종 점수: ${score}점`);
+        return;
+    }
+    
     const q = questions[currentQuestion];
     const sentenceEl = document.getElementById('sentence');
     const hintEl = document.getElementById('hint');
     const inputsEl = document.getElementById('inputs');
     const messageEl = document.getElementById('message');
     
+    attemptCount = 0;
     document.getElementById('question-num').textContent = currentQuestion + 1;
     
     let sentenceHtml = q.template;
@@ -114,10 +91,10 @@ function checkAnswer() {
         
         if (userAnswer === correctAnswer) {
             correctCount++;
-            blankEl.style.color = '#28a745';
+            blankEl.style.color = '#4ecca3';
             blankEl.textContent = correctAnswer;
         } else {
-            blankEl.style.color = '#dc3545';
+            blankEl.style.color = '#e94560';
             blankEl.textContent = userAnswer || '(미입력)';
         }
     });
@@ -127,28 +104,37 @@ function checkAnswer() {
         score += 10;
         messageEl.textContent = '정답입니다!';
         messageEl.className = 'message correct';
+        document.getElementById('submit-btn').style.display = 'none';
+        document.getElementById('next-btn').style.display = 'inline-block';
     } else {
-        messageEl.textContent = `틀렸습니다. 정답: ${q.blanks.join(', ')}`;
-        messageEl.className = 'message wrong';
+        attemptCount++;
+        if (attemptCount >= 5) {
+            messageEl.textContent = `5번 틀렸습니다. 정답: ${q.blanks.join(', ')}`;
+            messageEl.className = 'message wrong';
+            document.getElementById('submit-btn').style.display = 'none';
+            document.getElementById('next-btn').style.display = 'inline-block';
+        } else {
+            messageEl.textContent = `틀렸습니다. (${attemptCount}/5)`;
+            messageEl.className = 'message wrong';
+        }
     }
     
     document.getElementById('score').textContent = score;
-    
-    document.getElementById('submit-btn').style.display = 'none';
-    document.getElementById('next-btn').style.display = 'inline-block';
 }
 
 function nextQuestion() {
     currentQuestion++;
-    
-    if (currentQuestion >= questions.length) {
-        alert(`게임 종료! 최종 점수: ${score}점`);
-        return;
-    }
-    
     showQuestion();
 }
 
+// 주제 선택 이벤트
+document.querySelectorAll('.topic-item').forEach(item => {
+    item.addEventListener('click', () => {
+        selectTopic(item.dataset.topic);
+    });
+});
+
+// Enter 키 이벤트
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
         const submitBtn = document.getElementById('submit-btn');
@@ -161,3 +147,6 @@ document.addEventListener('keydown', (e) => {
         }
     }
 });
+
+// 초기 로드
+selectTopic('civil');
